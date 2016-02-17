@@ -10,8 +10,10 @@
     <meta name="author" content="">
 
 
+    <link href="weather.css" rel="stylesheet">
     <!-- Bootstrap Core CSS -->
     <link href="css/bootstrap.min.css" rel="stylesheet">
+
 
     
 
@@ -41,19 +43,61 @@
     <!-- Page Content -->
     <div class="container">
 
-        <hr>
-        <h1> Weather and stuff </h1>
-        <div class="row", id="row1">
-           
-            <div class="col-lg-1"></div>
-            <div class="col-lg-1">
-                
-            </div>
-            <div class="col-lg-7", id="output1"></div>
-            <div class="col-lg-2", id="hashtag1"></div>
+                <div class="col-lg-6">
+                    <div class="panel panel-default">
+                        <div class="panel-body"> 
+                            <img id="todayIcon">
+                            <h2 id="today", align="center">  </h2>
+                            <h1 id="todayTemperature", align="center"></h1>
+
+                            <hr>
+                            <h4> </h4>
+                            <h4 id="todayHighTemperature"></h4>
+                            <h4 id="todayLowTemperature"></h4>
+                            <h4 id="todayWindSpeed"></h4>
+                            <h4 id="todayHumidity"></h4>
+                        </div>
+                    </div>
+
+                </div>
             
-        </div>
-        <!-- /.row -->
+                 <div class="col-lg-1"></div>
+                <div class="col-lg-4">
+                    <div class="panel panel-default">
+                        <div class="panel-body", id="1"> 
+                            <img id="icon1", src="white.png">
+                            <h3 id="date1", align="center">  </h3>
+                            <h1 id="temperature1", align="center"></h1>
+                        </div>
+                    </div>
+
+                    <div class="panel panel-default">
+                        <div class="panel-body", id="2"> 
+                            <img id="icon2", src="white.png">
+                            <h3 id="date2", align="center"> </h3>
+                            <h1 id="temperature2", align="center"></h1>
+                        </div>
+                    </div>
+
+                    <div class="panel panel-default">
+                        <div class="panel-body", id="3"> 
+                            <img id="icon3", src="white.png">
+                            <h3 id="date3", align="center">  </h3>
+                            <h1 id="temperature3", align="center"></h1>
+                        </div>
+                    </div>
+
+                    <div class="panel panel-default">
+                        <div class="panel-body", id="4"> 
+                            <img id="icon4", src="white.png">
+                            <h3 id="date4", align="center">  </h3>
+                            <h1 id="temperature4", align="center"></h1>
+                        </div>
+                    </div>
+                </div>
+
+               
+    
 
         
 
@@ -70,34 +114,110 @@
         var row = document.getElementById("row1");
 
         function getLocation() {
-            if (navigator.geolocation) {
+            if (navigator.geolocation != null) {
                 navigator.geolocation.getCurrentPosition(showPosition);
-            } else { 
-                x.innerHTML = "Geolocation is not supported by this browser.";
+
+            } 
+            else
+            {
+                row.innerHTML = "Geolocation not supported";
             }
         }
 
+        function toFarenheit(kelvin){
+            return Math.round( (kelvin - 273) * 9 / 5 + 32);
+        }
+
+        function convertDate(timestamp)
+        {
+            var date = new Date(timestamp * 1000);
+            return date.toDateString();
+        }
+
+        function changeValues(weatherjson, dateId, temperatureId, iconId, i)
+        {
+            var url = "http://openweathermap.org/img/w/" + weatherjson.list[i].weather[0].icon + ".png";
+            document.getElementById(iconId).src = url;
+            document.getElementById(dateId).innerHTML = convertDate(weatherjson.list[i].dt); 
+            document.getElementById(temperatureId).innerHTML = toFarenheit(weatherjson.list[i].temp.day) + " °F";
+            
+        }
+
+        function resetAnimation(id){
+            var panel = document.getElementById(id);
+            panel.classList.remove("panel-body");
+            panel.offsetWidth = panel.offsetWidth; // I have no idea why this makes the animation reset but it does
+            panel.classList.add("panel-body");
+        }
+
+        function moveValues(dateIdOld, temperatureIdOld, iconIdOld, dateIdNew, temperatureIdNew, iconIdNew)
+        {
+            document.getElementById(dateIdNew).innerHTML = document.getElementById(dateIdOld).innerHTML;
+            document.getElementById(temperatureIdNew).innerHTML = document.getElementById(temperatureIdOld).innerHTML;
+            document.getElementById(iconIdNew).src = document.getElementById(iconIdOld).src; 
+        }
+
+        function display(weatherjson, i)
+        {
+            
+            moveValues("date3", "temperature3", "icon3", "date4", "temperature4", "icon4");
+            moveValues("date2", "temperature2", "icon2", "date3", "temperature3", "icon3");
+            moveValues("date1", "temperature1", "icon1", "date2", "temperature2", "icon2");
+            changeValues(weatherjson, "date1", "temperature1", "icon1", i);
+            resetAnimation("4");
+            resetAnimation("3");
+            resetAnimation("2");
+            resetAnimation("1");
+
+            if(i+1 < weatherjson.list.length)
+            {
+                setTimeout(display, 3000, weatherjson, i+1);
+            }
+            else
+            {
+                setTimeout(display, 3000, weatherjson, 1);
+            }
+        }
+
+
+
         function showPosition(position) {
-            row.innerHTML = "Latitude: " + position.coords.latitude + 
-            "<br>Longitude: " + position.coords.longitude;  
-
-            Console.log("meep");
-
             var latitude = position.coords.latitude;
             var longitude = position.coords.longitude;
+            var key = "f57fdb7f3621c20f8a94cefb38347c9a";
             
-            var url = "api.openweathermap.org/data/2.5/weather?lat=" + latitude + "&lon=" + longitude;
+            var url = "http://api.openweathermap.org/data/2.5/forecast/daily?APPID=" + key + "&lat=" + latitude + "&lon=" + longitude;
 
             
-
-
-
             $.ajax({
+                crossDomain: true,
+                contentType: "application/json; charset=utf-8",
+                type: "GET",
+                async: false,
+                url: url,
                 dataType: "jsonp",
-                url: "url",
-                data: data,
-                success: success
+            }).done(function(msg){
+                console.log(msg);
+                var today = document.getElementById("today");
+                var todayTemperature = document.getElementById("todayTemperature");
+                var todayIcon = document.getElementById("todayIcon");
+
+                document.getElementById("todayHighTemperature").innerHTML = "High Temperature: " + toFarenheit(msg.list[0].temp.max) + " °F";
+                document.getElementById("todayLowTemperature").innerHTML = "Low Temperature: " + toFarenheit(msg.list[0].temp.min) + " °F";
+                document.getElementById("todayWindSpeed").innerHTML = "Wind Speed: " + msg.list[0].speed+ " mps";
+                document.getElementById("todayHumidity").innerHTML = "Humidity: " + msg.list[0].humidity+ " %";
+                
+                
+                todayIcon.src = "http://openweathermap.org/img/w/" + msg.list[0].weather[0].icon + ".png";
+                today.innerHTML = convertDate(msg.list[0].dt); 
+                todayTemperature.innerHTML = toFarenheit(msg.list[0].temp.day) + " °F";
+
+                display(msg, 1);
+                
+                
             });
+
+           
 
         }
 
