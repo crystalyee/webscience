@@ -49,6 +49,7 @@
     <!-- Page Content -->
     <div class="container">
 
+        <!-- Searchbar -->
         <div class="row">
             <div class="col-lg-1"></div>
             <div class="col-lg-2" color="black">
@@ -59,17 +60,21 @@
 
         <hr>
 
+        <!-- 5 rows of ticking tweets -->
         <div class="row", id="row1">
            
+            <!-- Profile image -->
             <div class="col-lg-1"></div>
             <div class="col-lg-1">
                 <img class="avatar", ng-src="{{image1}}">
             </div>
+            <!-- Tweet text content in a panel-->
             <div class="col-lg-7">
                 <div class="panel panel-default">
                     <div class="panel-body", id="output1">{{output1}}</div>
                 </div>
             </div>
+            <!-- Free floating hashtags -->
             <div class="col-lg-2">
                 {{hashtag1}}
             </div>
@@ -173,15 +178,15 @@
 
             function loadJSON(callback) {
                 var url = 'get_tweets.php';
-                
+                // Get request using get_tweets.php 
                 $http({
                     method: 'GET',
                     url: url,
-                    params: {'q': $scope.search}
+                    // $scope.search taken from the searchbar
+                    params: {'q': $scope.search} 
                 }).then(function successCallback(response) {
                     var tweetsjson = response;
-                    console.log(response);
-                    $scope.$apply();
+                    // display function uses indices i through i-4, starting at 4 starts the bottommost tweet at index 0
                     display(tweetsjson["data"]["statuses"], 4, $scope.search);
 
                 }, function errorCallback(response) {
@@ -191,6 +196,7 @@
 
             }
 
+            // returns a string of hashtags
             function buildHashtagString(hashtags){
                 var string = "";
                 for(i = 0; i < hashtags.length; i++)
@@ -200,6 +206,7 @@
                 return string;
             }
 
+            // changes text content
             function changeText(tweetsjson, i){
                 $scope.output1 = tweetsjson[i]["text"];
                 $scope.output2 = tweetsjson[i-1]["text"];
@@ -207,7 +214,7 @@
                 $scope.output4 = tweetsjson[i-3]["text"];
                 $scope.output5 = tweetsjson[i-4]["text"];
             }
-
+            // changes profile pics
             function changeImage(tweetsjson, i){
                 $scope.image1 = tweetsjson[i]["user"]["profile_image_url"];
                 $scope.image2 = tweetsjson[i-1]["user"]["profile_image_url"];
@@ -216,6 +223,7 @@
                 $scope.image5 = tweetsjson[i-4]["user"]["profile_image_url"];
             }
 
+            // changes hashtags
             function changeHashtags(tweetsjson, i){
                
                 $scope.hashtag1 = buildHashtagString(tweetsjson[i]["entities"].hashtags);
@@ -233,30 +241,32 @@
 
 
             function display(tweetsjson, i, oldSearch){
+                // load JSON if the search bar has been changed
                 if ($scope.search != oldSearch){
                     loadJSON();
                 }
+
                 else{
 
+                    // change html content
                     changeText(tweetsjson, i);
                     changeImage(tweetsjson, i);
                     changeHashtags(tweetsjson, i);
+                    // assures content is displayed
                     $scope.$apply();
-
-                    console.log($scope.search);
-               
-                    
+  
                     resetAnimation(document.getElementById("row5"));
                     resetAnimation(document.getElementById("row4"));
                     resetAnimation(document.getElementById("row3"));
                     resetAnimation(document.getElementById("row2"));
                     resetAnimation(document.getElementById("row1"));
                     
-                    
+                    // repeat the process moving each tweet down
                     if (i < tweetsjson.length - 1)
                     {
                         setTimeout(display, 3000, tweetsjson, i+1, $scope.search);
                     }
+                    // reloads JSON when we've run out of tweets
                     else
                     {
                         setTimeout(loadJSON, 3000);
@@ -265,6 +275,7 @@
                     
             };
 
+            // self evoking initialization function
             var init = function() {
                 loadJSON();
             
