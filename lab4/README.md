@@ -1,0 +1,3 @@
+In this lab I mostly just rewrote my lab1 code using Angular. The most difficult part was understanding how everything fit into the model view controller model. Initially not including ng-route didn't help either. 
+
+I decided to use panels since it scaled down better in the mobile version. I also used a simple media query to enable animations only on screens with a width of over 680px. the search bar reloads the json file if there's a change in the input within the last update cycle of the ticking tweets. As a side effect, all displayed tweets are replaced with new tweets from the search query which I'm a little sad about. 
