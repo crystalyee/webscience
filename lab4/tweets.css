@@ -1,0 +1,58 @@
+
+div.message-panel{
+	height: 73;
+}
+
+img.avatar{
+	height:73px;
+	width:73px;
+	src:"http://www.thesocialmediahat.com/sites/default/files/default_profile_4.png";
+}
+
+
+@keyframes fade{
+	from{
+		opacity: 0.5;
+	}
+	to{
+		opacity: 1;
+	}
+}
+
+.row{
+	animation: fade 0.5s ease;
+}
+
+div.col-lg-7{
+
+}
+	
+div.col-lg-2{
+	color: #FFFFFF;
+
+}
+
+
+div.panel-body {
+	background:#FFFFFF;
+	
+}
+
+hr{
+	margin-top: 0;
+	margin-bottom: 0;
+	border-width: 2px;
+}
+
+h1{
+	background: #2F3436;
+	color: #FFFFFF !important;
+}
+
+input{
+	color: #000000 !important;
+}
+
+body {
+	background: #2F3436 !important;
+}

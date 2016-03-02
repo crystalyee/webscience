@@ -78,18 +78,9 @@ function showPosition(position) {
         url: url,
         dataType: "jsonp",
     }).done(function(msg){
-        //console.log(msg);
+        console.log(msg);
         
-        document.getElementById("todayIcon").src = "http://openweathermap.org/img/w/" + msg.list[0].weather[0].icon + ".png";
-        document.getElementById("today").innerHTML = convertDate(msg.list[0].dt); 
-        document.getElementById("todayTemperature").innerHTML = toFarenheit(msg.list[0].temp.day) + " °F";
-
-        document.getElementById("todayHighTemperature").innerHTML = "High Temperature: " + toFarenheit(msg.list[0].temp.max) + " °F";
-        document.getElementById("todayLowTemperature").innerHTML = "Low Temperature: " + toFarenheit(msg.list[0].temp.min) + " °F";
-        document.getElementById("todayWindSpeed").innerHTML = "Wind Speed: " + msg.list[0].speed+ " mps";
-        document.getElementById("todayHumidity").innerHTML = "Humidity: " + msg.list[0].humidity+ " %";
-        
-        display(msg, 1);
+       
     });
 
    
