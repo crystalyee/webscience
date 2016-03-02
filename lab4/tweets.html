@@ -70,7 +70,9 @@
                     <div class="panel-body", id="output1">{{output1}}</div>
                 </div>
             </div>
-            <div class="col-lg-2">{{hashtag1}}</div>
+            <div class="col-lg-2">
+                {{hashtag1}}
+            </div>
             
         </div>
         <!-- /.row -->
@@ -87,7 +89,9 @@
                     <div class="panel-body", id="output2">{{output2}}</div>
                 </div>
             </div>
-            <div class="col-lg-2">{{hashtag2}}</div>
+            <div class="col-lg-2">
+                {{hashtag2}}
+            </div>
             
         </div>
         <!-- /.row -->
@@ -104,7 +108,9 @@
                     <div class="panel-body", id="output3">{{output3}}</div>
                 </div>
             </div>
-            <div class="col-lg-2">{{hashtag3}}</div>
+            <div class="col-lg-2">
+                {{hashtag3}}
+            </div>
             
         </div>
         <!-- /.row -->
@@ -121,7 +127,9 @@
                     <div class="panel-body", id="output4">{{output4}}</div>
                 </div>
             </div>
-            <div class="col-lg-2">{{hashtag4}}</div>
+            <div class="col-lg-2">
+                {{hashtag4}}
+            </div>
             
         </div>
 
@@ -137,7 +145,9 @@
                     <div class="panel-body", id="output5">{{output5}}</div>
                 </div>
             </div>
-            <div class="col-lg-2">{{hashtag5}}</div>
+            <div class="col-lg-2">
+                {{hashtag5}}
+            </div>
             
         </div>
         <!-- /.row -->
@@ -157,7 +167,6 @@
     
     <script>
         var app = angular.module("TweetClicker", ["ngRoute"]);
-
 
 
         app.controller("TweetCtrl", function($scope, $http, $log) {
@@ -257,18 +266,11 @@
             };
 
             var init = function() {
-                $scope.imageError = "http://www.thesocialmediahat.com/sites/default/files/default_profile_4.png";
                 loadJSON();
             
             }();
 
-
-
-
-
         });
-
-
 
     </script>
 
