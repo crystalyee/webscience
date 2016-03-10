@@ -1,0 +1,3 @@
+In this lab I used express and node to get tweets using the streaming api. I also used sockets to facilitate communication between the client and server. I transfer tweets from the socket one at a time to the client until the client's queue reaches 40 tweets. Tweets are sent one at a time because if I make a queue in the server and the serach term isn't very popular, a single tweet could get delayed for a long time. I think I still have some difficulty with multiple streams opening up if I don't have anything to send to the client right away. 
+
+I also used fs to write the JSON information to a file. 
