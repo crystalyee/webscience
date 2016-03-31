@@ -71,8 +71,14 @@ process.on('SIGINT', function(){
 	setTimeout(process.exit, 100, 2); 
 });
 
+app.use("/", express.static(__dirname));
+
 
 app.get('/', function (req, res) {
-	res.send("Hello World");
+	res.sendFile(__dirname + '/tweets.html');
 });
+
+
+
+
 

@@ -8,9 +8,9 @@
   "author": "Crystal Yee",
   "license": "ISC",
   "description": "",
-  "repository" : "",
-  "dependencies" :
-	  { "express": "^3.7.3",
+  "repository" : "https://github.com/crystalyee/webscience/tree/master/lab6",
+  "dependencies" : 
+	  { "express": "^4.0.0",
 	  	"twitter": "^1.2.5",
 	  	"fs": "^0.0.2",
 	  	"socket.io": "^1.4.5"
