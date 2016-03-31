@@ -1,0 +1,16 @@
+{
+  "name": "quiz1server",
+  "version": "1.0.0",
+  "main": "Quiz1Server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {"express",
+  					"socket.io",
+
+  					},
+  "devDependencies": {},
+  "description": ""
+}
