@@ -1,3 +1,3 @@
-In this lab I used express and node to get tweets using the streaming api. I also used sockets to facilitate communication between the client and server. I transfer tweets from the socket one at a time to the client until the client's queue reaches 40 tweets. Tweets are sent one at a time because if I make a queue in the server and the serach term isn't very popular, a single tweet could get delayed for a long time. I think I still have some difficulty with multiple streams opening up if I don't have anything to send to the client right away. 
+A lot of the work in this lab was fixing errors I made in lab 5 where I had a server running and it could communicate with my app, but the server wasn't actually serving the app itself. 
 
-I also used fs to write the JSON information to a file. 
+I used Angular to print out progress messages after completing an action or receiving a message from the server. It outputs the total amount of tweets received at any time which makes it easy to identify when a query simply isn't finding any tweets.

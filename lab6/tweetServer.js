@@ -5,8 +5,8 @@ var app = express();
 var server = app.listen(3000);
 var io = require("socket.io").listen(server);
 
-fs.writeFile("ITWS4500-S16-yeec2-tweets.json", "[\n")
 
+console.log("app listening on port 3000");
 
 var twitStream = new Twitter({
   consumer_key: 'fhulNPA0RwVxpjHbEUIyuUEb9',
@@ -27,24 +27,16 @@ io.sockets.on("connection", function(client){
 		if (searchTerm == undefined){
 			searchTerm = "";
 			locations = [-73.68,42.72,-73.67,42.73];
-
 		}
 		
-			twitStream.stream("statuses/filter", {track: searchTerm, locations:locations}, function(stream){
+		twitStream.stream("statuses/filter", {track: searchTerm, locations:locations}, function(stream){
 				stream.on("data", function(tweet){
 
 					// sends tweet to client
-					client.emit("tweet", tweet);
-
-					// writes tweet to file
-					fs.appendFile("ITWS4500-S16-yeec2-tweets.json", JSON.stringify(tweet));
-					fs.appendFile("ITWS4500-S16-yeec2-tweets.json", ",\n");
-					addToFile(JSON.stringify(tweet) );
-					
-				
+					client.emit("tweet", tweet);		
 				});
 				stream.on('error', function(error) {
-			    	console.log(error);
+					client.emit("tweeterror", {message:error});	
 			  	});
 
 				// destorys stream with input from client
@@ -52,24 +44,24 @@ io.sockets.on("connection", function(client){
 					stream.destroy();
 				});
 			});
-		
-
 		console.log("search term:", searchTerm);
-
-		
-
 	})
 
+	client.on("export", function(data){
+		console.log("Exporting tweets as a ", data.filetype, " file");
+		if (data.filetype == "JSON"){
+			fs.writeFile("ITWS4500-S16-yeec2-tweets.json", data.text);
+			client.emit("export", {message:"Tweets exported as JSON file"});	
+		}
+		if (data.filetype == "CSV"){
+			fs.writeFile("ITWS4500-S16-yeec2-tweets.csv", data.text);
+			client.emit("export", {message:"Tweets exported as CSV file"});	
+		}
+	})
+
+
 });
 
-// adds last ] before closing server
-process.on('SIGINT', function(){
-	console.log("Server Exiting...");
-	fs.appendFile("ITWS4500-S16-yeec2-tweets.json", "\n]\n\n\n");
-
-	// give program time to add closing bracket before killing server
-	setTimeout(process.exit, 100, 2); 
-});
 
 app.use("/", express.static(__dirname));
 
