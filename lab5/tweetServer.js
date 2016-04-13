@@ -3,6 +3,7 @@ var Twitter = require('twitter');
 var fs = require('fs');
 var app = express();
 var server = app.listen(3000);
+var MongoClient = require('mongodb').MongoClient;
 var io = require("socket.io").listen(server);
 
 fs.writeFile("ITWS4500-S16-yeec2-tweets.json", "[\n")
