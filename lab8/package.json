@@ -1,0 +1,17 @@
+{
+  "name": "lab8",
+  "version": "1.0.0",
+  "description": "",
+  "main": "queryServer.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.13.4",
+    "http": "0.0.0",
+    "socket.io": "^1.4.5",
+    "xml2js": "^0.4.16"
+  }
+}
