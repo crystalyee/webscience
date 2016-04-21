@@ -57,23 +57,54 @@
 
       
     <div class="row">
-        <div class="col-lg-1"></div>
-        <div class="col-lg-2" color="black">
-                <h4>Query</h4> 
-                <input type="text", ng-model="search">
-        </div>
+        <form class="form-horizontal">
+            <div class="col-lg-2">
+                <h4>Subject</h4> 
+                <input class="form-control" type="text", ng-model="search0">
+            </div>
+            <div class="col-lg-3" color="black">
+                    <h4>Variable 1</h4> 
+                    <input class="form-control" type="text", ng-model="search1">
+                    
+            </div>
+            <div class="col-lg-3" color="black">
+                    <h4>Variable 2</h4> 
+                    <input class="form-control" type="text", ng-model="search2">
+                   
+            </div>
+            <div class="col-lg-3" color="black">
+                    <h4>Variable 3</h4> 
+                    <input class="form-control" type="text", ng-model="search3">
+                
+            </div>
 
-        <div class="col-lg-1">
-            <h4><br></h4>
-            <button ng-click="searchButton()">Load</button>
+            <div class="col-lg-1">
+                <h4><br></h4>
             
-        </div>
+                <button ng-click="searchButton()">Load</button>
+                
+            </div>
+        </form>
 
     </div>
 
     <hr>
 
-  
+
+    <div class="row">
+        <div ng-repeat="u in uriBuffer">
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <a href = "{{u.uri[0]}}">{{u.uri[0]}}</a> 
+                </div>
+            </div>
+        </div>
+    </div>
+
+        
+
+   
+
 
     </div>
     <!-- /.container -->
@@ -91,27 +122,47 @@
         // Connection to server
         var socket = io.connect("http://localhost:3000/");
 
-        // container for tweets
-        var tweetBuffer = [];
+    
 
 
 
         app.controller("QueryCtrl", function($scope, $http, $log) {
+         
+            $scope.uriBuffer = [];
+            
+            // default entries
+
+            $scope.search0 = "?person";
+            $scope.search1 = "?person a dbpedia-owl:Scientist";
+            $scope.search2 = "?person dbpedia-owl:birthPlace dbpedia:Paris";
+            $scope.search3 = "?person dbpedia-owl:field dbpedia:Mathematics";
 
            
 
-            // Receives Tweets from server
+            // Receives JSON from server
             socket.on("result", function(data){
                 console.log(data);
+                var array = data.sparql.results[0].result;
+                for (x in array){
+                    console.log(array[x]);
+                    $scope.uriBuffer.push(array[x].binding[0]);
+                }
+                $scope.$apply();
+                
             });
-
 
 
             // Clears buffer and sends request to server
             $scope.searchButton = function(){
+                $scope.uriBuffer = [];
                 console.log("Query button pressed");
-                socket.emit("query");
+                var _subject = $scope.search0;
+                var _var1 = $scope.search1;
+                var _var2 = $scope.search2;
+                var _var3 = $scope.search3;
+                socket.emit("query", {subject: _subject, var1: _var1, var2: _var2, var3: _var3});
             }
+
 
            
         });

@@ -1,0 +1,3 @@
+To be honest I'm not sure if I did the lab correctly at all. It wasn't clear to me what the output of the query should be. I was also confused about what 3 columns meant...
+
+The hardest part of the lab was figuring out how to translate SPARQL queries into get requests. I didn't know that the javascript encodeURI() function existed for a long time, and manually trying to figure out queries that wouldn't give me an error was an exercise in futility. It also took me a long time to figure out that you need to add uri resources under the PREFIX tag. 
