@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+
+    <!-- Angular -->
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.3.5/angular.min.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.3.5/angular-route.js"> </script>
+
+    <!-- Sockets -->
+    <script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
+
+
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    
+
+    <link href="tweets.css" rel="stylesheet">
+
+    <!-- Bootstrap Core CSS -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+
+
+
+
+    
+
+    <!-- Custom CSS -->
+    <style>
+    body {
+        padding-top: 20px;
+        /* Required padding for .navbar-fixed-top. Remove if using .navbar-static-top. Change if height of navigation changes. */
+    }
+    </style>
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+</head>
+
+<body ng-app="TweetClicker", ng-controller="TweetCtrl">
+    <meta charset="utf-8">
+
+    <!-- Navigation -->
+    
+
+    <!-- Page Content -->
+    <div class="container">
+
+      
+    <div class="row">
+        <div class="col-lg-2">
+            <h4>Query</h4> 
+            <input type="text", ng-model="search">
+
+            <h4>Number of Tweets</h4> 
+            <input type="number", ng-model="number">
+
+            <button ng-click="searchButton()">Load</button>
+            <h4><br></h4>
+
+            <h4>File Type</h4> 
+
+            <select class="form-control" id="dropdown" ng-model="selectionType">
+                <option>JSON</option>
+                <option>CSV</option>
+            </select> 
+
+            <button ng-click="sendExport()">Export</button>
+            <h4><br></h4>
+
+            <button ng-click="buildDatabase()">Build Database</button>
+            <h4><br></h4>
+
+            <button ng-click="clearDatabase()">Clear Database</button>
+            <h4><br></h4>
+
+            <button ng-click="displayTweets()">Display Tweets</button>
+            <h4><br></h4>
+
+            <h4>File Name</h4>
+            <input type="text", ng-model="xmlname">
+            <button ng-click="createXML()">Create XML</button>
+            <br>
+
+        </div>
+
+        <div class="col-lg-10">
+
+            <h4><br></h4>
+            
+                <!-- 5 rows of ticking tweets -->
+            <div class="row", id="row1">
+               
+                <!-- Profile image -->
+                <div class="col-lg-1"></div>
+                <div class="col-lg-1">
+                    <img class="avatar", ng-src="{{image1}}">
+                </div>
+                <!-- Tweet text content in a panel-->
+                <div class="col-lg-7">
+                    <div class="panel panel-default">
+                        <div class="panel-body", id="output1">{{output1}}</div>
+                    </div>
+                </div>
+                <!-- Free floating hashtags -->
+                <div class="col-lg-2">
+                    {{hashtag1}}
+                </div>
+                
+            </div>
+            <!-- /.row -->
+
+            <br>
+            <div class="row", id="row2">
+               
+                <div class="col-lg-1"></div>
+                <div class="col-lg-1">
+                    <img class="avatar", ng-src="{{image2}}">
+                </div>
+                <div class="col-lg-7">
+                    <div class="panel panel-default">
+                        <div class="panel-body", id="output2">{{output2}}</div>
+                    </div>
+                </div>
+                <div class="col-lg-2">
+                    {{hashtag2}}
+                </div>
+                
+            </div>
+            <!-- /.row -->
+
+            <br>
+            <div class="row", id="row3">
+               
+                <div class="col-lg-1"></div>
+                <div class="col-lg-1">
+                    <img class="avatar", ng-src="{{image3}}">
+                </div>
+                <div class="col-lg-7">
+                    <div class="panel panel-default">
+                        <div class="panel-body", id="output3">{{output3}}</div>
+                    </div>
+                </div>
+                <div class="col-lg-2">
+                    {{hashtag3}}
+                </div>
+                
+            </div>
+            <!-- /.row -->
+
+            <br>
+            <div class="row", id="row4">
+               
+                <div class="col-lg-1"></div>
+                <div class="col-lg-1">
+                    <img class="avatar", ng-src="{{image4}}">
+                </div>
+                <div class="col-lg-7">
+                    <div class="panel panel-default">
+                        <div class="panel-body", id="output4">{{output4}}</div>
+                    </div>
+                </div>
+                <div class="col-lg-2">
+                    {{hashtag4}}
+                </div>
+                
+            </div>
+
+            <br>
+            <div class="row", id="row5">
+               
+                <div class="col-lg-1"></div>
+                <div class="col-lg-1">
+                    <img class="avatar", ng-src="{{image5}}">
+                </div>
+                <div class="col-lg-7">
+                    <div class="panel panel-default">
+                        <div class="panel-body", id="output5">{{output5}}</div>
+                    </div>
+                </div>
+                <div class="col-lg-2">
+                    {{hashtag5}}
+                </div>
+                
+            </div>
+
+
+            <div class="row">
+                <div class="col-lg-1"></div>
+                <div class="col-lg-8"><h4>{{output}}</h4></div>
+        
+            </div>
+
+        <!-- /.row -->
+        </div>
+
+        
+        
+    </div>
+  
+
+
+    
+
+    
+
+
+        
+        
+
+    </div>
+    <!-- /.container -->
+
+    <!-- jQuery Version 1.11.1 -->
+    <script src="js/jquery.js"></script>
+
+    <!-- Bootstrap Core JavaScript -->
+    <script src="js/bootstrap.min.js"></script>
+
+    
+    <script>
+        var app = angular.module("TweetClicker", ["ngRoute"]);
+
+        // Connection to server
+        var socket = io.connect("http://localhost:3000/");
+
+        // container for tweets
+        var tweetBuffer = [];
+        var tweets = [];
+        var XMLtweets = [];
+        var tweetsDisplaying = false;
+        var stopDisplayingTweets = false;
+
+
+
+        app.controller("TweetCtrl", function($scope, $http, $log) {
+
+            // Receives Tweets from server
+            socket.on("tweet", function(data){
+                if (tweetBuffer.length < $scope.number){
+                    tweetBuffer.push(data);
+                    $scope.output = "Obtained " + tweetBuffer.length + " tweets";
+                    $scope.$apply();
+                }
+                else {
+                    socket.emit("stop");
+                }
+            });
+
+            // Prints message when server has exported tweets
+            socket.on("export", function(data){
+                console.log("export");
+                $scope.output = data.message;
+                $scope.$apply();
+                console.log($scope.output);
+            });
+
+            socket.on("tweeterror", function(data){
+                console.log("tweeterror");
+                $scope.output = data.message;
+                $scope.$apply();
+                console.log($scope.output);
+            });
+
+            // display message that tweets have been added to database
+            socket.on("databaseBuilt", function(data){
+                $scope.output = "Tweets added to database";
+                $scope.$apply();
+                console.log($scope.output);
+            });
+
+            // display message that tweets have been removed from database
+            socket.on("databaseCleared", function(data){
+                $scope.output = "Cleared all tweets from database";
+                $scope.$apply();
+                console.log($scope.output);
+            });
+
+            // database query is done
+            socket.on("databaseEmpty", function(data){
+                setTimeout(function(){
+                    $scope.output = "Finished Fetching Tweets";
+                    $scope.$apply();
+                    makeXML();
+                }, 4000);
+                
+            });
+
+            socket.on("displayTweets", function(data){
+                console.log(data);
+                tweets.push(data);
+            });
+
+            socket.on("XMLTweets", function(data){
+                console.log("XML", data);
+                XMLtweets.push(data);
+            });
+
+            // returns a string of hashtags
+            function buildHashtagString(hashtags){
+                var string = "";
+                for(i = 0; i < hashtags.length; i++)
+                {
+                    string = string + "#" + hashtags[i]["text"] + " ";
+                }
+                return string;
+            }
+
+            // changes text content
+            function changeText(tweet){
+
+                $scope.output5 = $scope.output4;
+                $scope.output4 = $scope.output3;
+                $scope.output3 = $scope.output2;
+                $scope.output2 = $scope.output1;
+                $scope.output1 = tweet["text"];
+            }
+            // changes profile pics
+            function changeImage(tweet){
+                
+                $scope.image5 = $scope.image4;
+                $scope.image4 = $scope.image3;
+                $scope.image3 = $scope.image2;
+                $scope.image2 = $scope.image1;
+                $scope.image1 = tweet["user"]["profile_image_url"];
+            }
+
+            // changes hashtags
+            function changeHashtags(tweet){
+               
+                $scope.hashtag5 = $scope.hashtag4;
+                $scope.hashtag4 = $scope.hashtag3;
+                $scope.hashtag3 = $scope.hashtag2;
+                $scope.hashtag2 = $scope.hashtag1;
+                $scope.hashtag1 = buildHashtagString(tweet["entities"].hashtags);
+            }
+
+            function resetAnimation(row){
+                row.classList.remove("row");
+                row.offsetWidth = row.offsetWidth; // I have no idea why this makes the animation reset but it does
+                row.classList.add("row");
+            }
+
+
+            function display(){
+
+                if (stopDisplayingTweets){
+                    stopDisplayingTweets = false;
+                    return;
+                }
+               
+                if (tweets.length > 0) {
+                    tweetsDisplaying = true;
+                    var tweet = tweets.shift();
+                    tweets.push(tweet);
+                    // change html content
+                    changeText(tweet);
+                    changeImage(tweet);
+                    changeHashtags(tweet);
+                    // assures content is displayed
+                    $scope.$apply();
+
+                    resetAnimation(document.getElementById("row5"));
+                    resetAnimation(document.getElementById("row4"));
+                    resetAnimation(document.getElementById("row3"));
+                    resetAnimation(document.getElementById("row2"));
+                    resetAnimation(document.getElementById("row1"));  
+
+                    
+
+                }
+                setTimeout(display, 3000);
+                    
+            };
+
+            // formats tweets as XML and sends message to server for file writing
+            function makeXML(){
+                if (XMLtweets.length > 0){
+                    $scope.output = "Formatting XML for export";
+                    $scope.$apply();
+                    output = "";
+                    for (t in XMLtweets){
+                            output += '<tweet>';
+                            output += '\n\t<created_at>' + XMLtweets[t]["created_at"] + '</created_at>';
+                            output += '\n\t<id>' + XMLtweets[t]["id"] + '</id>';
+                            output += '\n\t<text>' + XMLtweets[t]["text"] + '</text>';
+                            output += '\n\t<user_id>' + XMLtweets[t]["user"]["id"] + '</user_id>';
+                            output += '\n\t<user_name>' + XMLtweets[t]["user"]["name"] + '</user_name>';
+                            output += '\n\t<user_screen_name>' + XMLtweets[t]["user"]["screen_name"] + '</user_screen_name>';
+                            output += '\n\t<user_location>' + XMLtweets[t]["user"]["location"] + '</user_location>';
+                            output += '\n\t<user_followers_count>' + XMLtweets[t]["user"]["followers_count"] + '</user_followers_count>';
+                            output += '\n\t<user_friends_count>' + XMLtweets[t]["user"]["friends_count"] + '</user_friends_count>';
+                            output += '\n\t<user_created_at>' + XMLtweets[t]["user"]["created_at"] + '</user_created_at>';
+                            output += '\n\t<user_time_zone>' + XMLtweets[t]["user"]["time_zone"] + '</user_time_zone>';
+                            output += '\n\t<user_profile_background_color>' + XMLtweets[t]["user"]["profile_background_color"] + '</user_profile_background_color>';
+                            output += '\n\t<user_profile_image_url>' + XMLtweets[t]["user"]["profile_image_url"] + '</user_profile_image_url>';
+                            output += '\n\t<geo>' + XMLtweets[t]["geo"] + '</geo>';
+                            output += '\n\t<coordinates>' + XMLtweets[t]["coordinates"] + '</coordinates>';
+                            output += '\n\t<place>' + XMLtweets[t]["place"] + '</place>';
+                            output += '\n</tweet>\n';
+                    }
+                    XMLtweets = [];
+                    var name = $scope.xmlname;
+                    socket.emit("export", {filetype:"XML", text:output, filename:name});
+                    
+                }
+                else{
+                    console.log("XMLtweets empty");
+                }
+            }
+
+            // Clears buffer and sends request to server
+            $scope.searchButton = function(){
+                if ($scope.number == null){
+                    $scope.output = "Please enter a number in the 'Number of Tweets' field";
+                }
+                else{
+                    $scope.output = "Waiting for tweets...";
+                    tweetBuffer = [];
+                    searchTerm = $scope.search;
+                    socket.emit("message", {txt:"message text", search:searchTerm});
+                } 
+            }
+
+            // Formats data and sends back to server
+            $scope.sendExport = function(){
+                var type = $scope.selectionType;
+                var output = "";
+                if (type == "JSON"){
+                    output += "[\n";
+                    for (t in tweetBuffer){
+                        output += '{';
+                        output += '\n\t"created_at": "' + tweetBuffer[t]["created_at"] + '"';
+                        output += ',\n\t"id": "' + tweetBuffer[t]["id"] + '"';
+                        output += ',\n\t"text": "' + tweetBuffer[t]["text"] + '"';
+                        output += ',\n\t"user_id": "' + tweetBuffer[t]["user"]["id"] + '"';
+                        output += ',\n\t"user_name": "' + tweetBuffer[t]["user"]["name"] + '"';
+                        output += ',\n\t"user_screen_name": "' + tweetBuffer[t]["user"]["screen_name"] + '"';
+                        output += ',\n\t"user_location": "' + tweetBuffer[t]["user"]["location"] + '"';
+                        output += ',\n\t"user_followers_count": "' + tweetBuffer[t]["user"]["followers_count"] + '"';
+                        output += ',\n\t"user_friends_count": "' + tweetBuffer[t]["user"]["friends_count"] + '"';
+                        output += ',\n\t"user_created_at": "' + tweetBuffer[t]["user"]["created_at"] + '"';
+                        output += ',\n\t"user_time_zone": "' + tweetBuffer[t]["user"]["time_zone"] + '"';
+                        output += ',\n\t"user_profile_background_color": "' + tweetBuffer[t]["user"]["profile_background_color"] + '"';
+                        output += ',\n\t"user_profile_image_url": "' + tweetBuffer[t]["user"]["profile_image_url"] + '"';
+                        output += ',\n\t"geo": "' + tweetBuffer[t]["geo"] + '"';
+                        output += ',\n\t"coordinates": "' + tweetBuffer[t]["coordinates"] + '"';
+                        output += ',\n\t"place": "' + tweetBuffer[t]["place"] + '"';
+                        output += ',\n},\n';
+                    }
+                    output += "]";
+                    socket.emit("export", {filetype:type, text:output});
+                }
+
+                if (type == "CSV"){
+                    output += '"created_at","id","text","user_id","user_name","user_screen_name","user_location","user_followers_count","user_friends_count","user_created_at","user_time_zone","user_profile_background_color","user_profile_image_url","geo","coordinates","place"\n';
+
+                    for (t in tweetBuffer){
+                        output += '\n"' + tweetBuffer[t]["created_at"] + '",';
+                        output += '"' + tweetBuffer[t]["id"] + '",';
+                        output += '"' + tweetBuffer[t]["text"] + '",';
+                        output += '"' + tweetBuffer[t]["user"]["id"] + '",';
+                        output += '"' + tweetBuffer[t]["user"]["name"] + '",';
+                        output += '"' + tweetBuffer[t]["user"]["screen_name"] + '",';
+                        output += '"' + tweetBuffer[t]["user"]["location"] + '",';
+                        output += '"' + tweetBuffer[t]["user"]["followers_count"] + '",';
+                        output += '"' + tweetBuffer[t]["user"]["friends_count"] + '",';
+                        output += '"' + tweetBuffer[t]["user"]["created_at"] + '",';
+                        output += '"' + tweetBuffer[t]["user"]["time_zone"] + '",';
+                        output += '"' + tweetBuffer[t]["user"]["profile_background_color"] + '",';
+                        output += '"' + tweetBuffer[t]["user"]["profile_image_url"] + '",';
+                        output += '"' + tweetBuffer[t]["geo"] + '",';
+                        output += '"' + tweetBuffer[t]["coordinates"] + '",';
+                        output += '"' + tweetBuffer[t]["place"] + '"\n';
+                    }
+                    socket.emit("export", {filetype:type, text:output});
+                }  
+            }
+
+            $scope.createXML = function(){
+                $scope.output = "Fetching tweets from database..."
+                $scope.$apply();
+                socket.emit("getDatabase", {user:"XML"});
+            }
+
+            $scope.buildDatabase = function(){
+                socket.emit("buildDatabase", {tweetList: tweetBuffer});
+            }
+
+            $scope.clearDatabase = function(){
+                socket.emit("clearDatabase", {tweetList: tweetBuffer});
+            }
+
+            $scope.displayTweets = function(){
+                if (tweetsDisplaying){
+                    stopDisplayingTweets = true;
+                    tweets = [];
+                }
+                $scope.output = "Fetching tweets from database..."
+                $scope.$apply();
+                socket.emit("getDatabase", {user:"display"});
+               
+                display();
+            }
+
+        });
+
+    </script>
+
+</body>
+
+</html>
+
