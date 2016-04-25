@@ -49,21 +49,25 @@ io.sockets.on("connection", function(client){
 
 	client.on("export", function(data){
 		console.log("Exporting tweets as a ", data.filetype, " file");
+
+		if (data.filename == ""){
+			data.filename = "ITWS4500-S16-yeec2-tweets";
+		}
+
 		if (data.filetype == "JSON"){
-			fs.writeFile("ITWS4500-S16-yeec2-tweets.json", data.text);
+			var name = data.filename + ".json";
+			fs.writeFile(name, data.text);
 			client.emit("export", {message:"Tweets exported as JSON file"});	
 		}
 		if (data.filetype == "CSV"){
-			fs.writeFile("ITWS4500-S16-yeec2-tweets.csv", data.text);
+			var name = data.filename + ".csv";
+			fs.writeFile(name, data.text);
 			client.emit("export", {message:"Tweets exported as CSV file"});	
 		}
 		if (data.filetype == "XML"){
-			if (data.filename == ""){
-				data.filename = "ITWS4500-S16-yeec2-tweets";
-			}
 			var name = data.filename + ".xml";
 			fs.writeFile(name, data.text);
-			client.emit("export", {message:"Tweets loaded from database exported as XML file"});	
+			client.emit("export", {message:"Tweets exported as XML file"});	
 		}
 	})
 

@@ -44,6 +44,11 @@
         <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
 
+    
+    
+    <h1 align="center">Tweet Clicker</h1>
+    
+
 </head>
 
 <body ng-app="TweetClicker", ng-controller="TweetCtrl">
@@ -67,38 +72,40 @@
             <button ng-click="searchButton()">Load</button>
             <h4><br></h4>
 
-            <h4>File Type</h4> 
-
-            <select class="form-control" id="dropdown" ng-model="selectionType">
-                <option>JSON</option>
-                <option>CSV</option>
-            </select> 
-
-            <button ng-click="sendExport()">Export</button>
-            <h4><br></h4>
-
-            <button ng-click="buildDatabase()">Build Database</button>
-            <h4><br></h4>
-
             <button ng-click="clearDatabase()">Clear Database</button>
             <h4><br></h4>
 
             <button ng-click="displayTweets()">Display Tweets</button>
             <h4><br></h4>
 
-            <h4>File Name</h4>
-            <input type="text", ng-model="xmlname">
-            <button ng-click="createXML()">Create XML</button>
-            <br>
+            <h4>File Type</h4> 
+
+            <select class="form-control" id="dropdown" ng-model="selectionType">
+                <option>JSON</option>
+                <option>CSV</option>
+                <option>XML</option>
+            </select> 
+            <input type="text", ng-model="fileName", placeholder="File Name">
+
+            <button ng-click="sendExport()">Export</button>
+            <h4><br></h4>
+
+            
+
+            
+
 
         </div>
 
         <div class="col-lg-10">
-
-            <h4><br></h4>
+            <div class="row">
+                <div class="col-lg-1"></div>
+                <div class="col-lg-8"><h4>{{output}}</h4></div>
+        
+            </div>
             
                 <!-- 5 rows of ticking tweets -->
-            <div class="row", id="row1">
+            <div class="row", id="row1", ng-show="output1 != null">
                
                 <!-- Profile image -->
                 <div class="col-lg-1"></div>
@@ -120,7 +127,7 @@
             <!-- /.row -->
 
             <br>
-            <div class="row", id="row2">
+            <div class="row", id="row2", ng-show="output2 != null">
                
                 <div class="col-lg-1"></div>
                 <div class="col-lg-1">
@@ -139,7 +146,7 @@
             <!-- /.row -->
 
             <br>
-            <div class="row", id="row3">
+            <div class="row", id="row3", ng-show="output3 != null">
                
                 <div class="col-lg-1"></div>
                 <div class="col-lg-1">
@@ -158,7 +165,7 @@
             <!-- /.row -->
 
             <br>
-            <div class="row", id="row4">
+            <div class="row", id="row4", ng-show="output4 != null">
                
                 <div class="col-lg-1"></div>
                 <div class="col-lg-1">
@@ -176,7 +183,7 @@
             </div>
 
             <br>
-            <div class="row", id="row5">
+            <div class="row", id="row5", ng-show="output5 != null">
                
                 <div class="col-lg-1"></div>
                 <div class="col-lg-1">
@@ -194,11 +201,7 @@
             </div>
 
 
-            <div class="row">
-                <div class="col-lg-1"></div>
-                <div class="col-lg-8"><h4>{{output}}</h4></div>
-        
-            </div>
+            
 
         <!-- /.row -->
         </div>
@@ -236,7 +239,7 @@
         // container for tweets
         var tweetBuffer = [];
         var tweets = [];
-        var XMLtweets = [];
+        var databaseTweets = [];
         var tweetsDisplaying = false;
         var stopDisplayingTweets = false;
 
@@ -250,6 +253,10 @@
                     tweetBuffer.push(data);
                     $scope.output = "Obtained " + tweetBuffer.length + " tweets";
                     $scope.$apply();
+
+                    if (tweetBuffer.length >= $scope.number){
+                        socket.emit("buildDatabase", {tweetList: tweetBuffer});
+                    }
                 }
                 else {
                     socket.emit("stop");
@@ -290,7 +297,7 @@
                 setTimeout(function(){
                     $scope.output = "Finished Fetching Tweets";
                     $scope.$apply();
-                    makeXML();
+                    exportTweets();
                 }, 4000);
                 
             });
@@ -301,8 +308,8 @@
             });
 
             socket.on("XMLTweets", function(data){
-                console.log("XML", data);
-                XMLtweets.push(data);
+                console.log("TweetRecieved", data);
+                databaseTweets.push(data);
             });
 
             // returns a string of hashtags
@@ -383,38 +390,100 @@
             };
 
             // formats tweets as XML and sends message to server for file writing
-            function makeXML(){
-                if (XMLtweets.length > 0){
-                    $scope.output = "Formatting XML for export";
+            function exportTweets(){
+                if (databaseTweets.length > 0) {
+                    var type = $scope.selectionType;
+                    $scope.output = "Formating tweets as " + type + " for export";
                     $scope.$apply();
                     output = "";
-                    for (t in XMLtweets){
+
+                    if (type == "XML"){
+                        for (t in databaseTweets){
                             output += '<tweet>';
-                            output += '\n\t<created_at>' + XMLtweets[t]["created_at"] + '</created_at>';
-                            output += '\n\t<id>' + XMLtweets[t]["id"] + '</id>';
-                            output += '\n\t<text>' + XMLtweets[t]["text"] + '</text>';
-                            output += '\n\t<user_id>' + XMLtweets[t]["user"]["id"] + '</user_id>';
-                            output += '\n\t<user_name>' + XMLtweets[t]["user"]["name"] + '</user_name>';
-                            output += '\n\t<user_screen_name>' + XMLtweets[t]["user"]["screen_name"] + '</user_screen_name>';
-                            output += '\n\t<user_location>' + XMLtweets[t]["user"]["location"] + '</user_location>';
-                            output += '\n\t<user_followers_count>' + XMLtweets[t]["user"]["followers_count"] + '</user_followers_count>';
-                            output += '\n\t<user_friends_count>' + XMLtweets[t]["user"]["friends_count"] + '</user_friends_count>';
-                            output += '\n\t<user_created_at>' + XMLtweets[t]["user"]["created_at"] + '</user_created_at>';
-                            output += '\n\t<user_time_zone>' + XMLtweets[t]["user"]["time_zone"] + '</user_time_zone>';
-                            output += '\n\t<user_profile_background_color>' + XMLtweets[t]["user"]["profile_background_color"] + '</user_profile_background_color>';
-                            output += '\n\t<user_profile_image_url>' + XMLtweets[t]["user"]["profile_image_url"] + '</user_profile_image_url>';
-                            output += '\n\t<geo>' + XMLtweets[t]["geo"] + '</geo>';
-                            output += '\n\t<coordinates>' + XMLtweets[t]["coordinates"] + '</coordinates>';
-                            output += '\n\t<place>' + XMLtweets[t]["place"] + '</place>';
+                            output += '\n\t<created_at>' + databaseTweets[t]["created_at"] + '</created_at>';
+                            output += '\n\t<id>' + databaseTweets[t]["id"] + '</id>';
+                            output += '\n\t<text>' + databaseTweets[t]["text"] + '</text>';
+                            output += '\n\t<user_id>' + databaseTweets[t]["user"]["id"] + '</user_id>';
+                            output += '\n\t<user_name>' + databaseTweets[t]["user"]["name"] + '</user_name>';
+                            output += '\n\t<user_screen_name>' + databaseTweets[t]["user"]["screen_name"] + '</user_screen_name>';
+                            output += '\n\t<user_location>' + databaseTweets[t]["user"]["location"] + '</user_location>';
+                            output += '\n\t<user_followers_count>' + databaseTweets[t]["user"]["followers_count"] + '</user_followers_count>';
+                            output += '\n\t<user_friends_count>' + databaseTweets[t]["user"]["friends_count"] + '</user_friends_count>';
+                            output += '\n\t<user_created_at>' + databaseTweets[t]["user"]["created_at"] + '</user_created_at>';
+                            output += '\n\t<user_time_zone>' + databaseTweets[t]["user"]["time_zone"] + '</user_time_zone>';
+                            output += '\n\t<user_profile_background_color>' + databaseTweets[t]["user"]["profile_background_color"] + '</user_profile_background_color>';
+                            output += '\n\t<user_profile_image_url>' + databaseTweets[t]["user"]["profile_image_url"] + '</user_profile_image_url>';
+                            output += '\n\t<geo>' + databaseTweets[t]["geo"] + '</geo>';
+                            output += '\n\t<coordinates>' + databaseTweets[t]["coordinates"] + '</coordinates>';
+                            output += '\n\t<place>' + databaseTweets[t]["place"] + '</place>';
                             output += '\n</tweet>\n';
+                        }
+                        databaseTweets[t] = [];
+                        var name = $scope.fileName;
+                        socket.emit("export", {filetype:type, text:output, filename:name});
+
                     }
-                    XMLtweets = [];
-                    var name = $scope.xmlname;
-                    socket.emit("export", {filetype:"XML", text:output, filename:name});
-                    
+
+                    if (type == "JSON"){
+                        output += "[\n";
+                        for (t in databaseTweets){
+                            output += '{';
+                            output += '\n\t"created_at": "' + databaseTweets[t]["created_at"] + '"';
+                            output += ',\n\t"id": "' + databaseTweets[t]["id"] + '"';
+                            output += ',\n\t"text": "' + databaseTweets[t]["text"] + '"';
+                            output += ',\n\t"user_id": "' + databaseTweets[t]["user"]["id"] + '"';
+                            output += ',\n\t"user_name": "' + databaseTweets[t]["user"]["name"] + '"';
+                            output += ',\n\t"user_screen_name": "' + databaseTweets[t]["user"]["screen_name"] + '"';
+                            output += ',\n\t"user_location": "' + databaseTweets[t]["user"]["location"] + '"';
+                            output += ',\n\t"user_followers_count": "' + databaseTweets[t]["user"]["followers_count"] + '"';
+                            output += ',\n\t"user_friends_count": "' + databaseTweets[t]["user"]["friends_count"] + '"';
+                            output += ',\n\t"user_created_at": "' + databaseTweets[t]["user"]["created_at"] + '"';
+                            output += ',\n\t"user_time_zone": "' + databaseTweets[t]["user"]["time_zone"] + '"';
+                            output += ',\n\t"user_profile_background_color": "' + databaseTweets[t]["user"]["profile_background_color"] + '"';
+                            output += ',\n\t"user_profile_image_url": "' + databaseTweets[t]["user"]["profile_image_url"] + '"';
+                            output += ',\n\t"geo": "' + databaseTweets[t]["geo"] + '"';
+                            output += ',\n\t"coordinates": "' + databaseTweets[t]["coordinates"] + '"';
+                            output += ',\n\t"place": "' + databaseTweets[t]["place"] + '"';
+                            output += ',\n},\n';
+                        }
+                        output += "]";
+                        databaseTweets[t] = [];
+                        var name = $scope.fileName;
+                        socket.emit("export", {filetype:type, text:output, filename:name});
+                    }
+
+                    if (type == "CSV"){
+                        output += '"created_at","id","text","user_id","user_name","user_screen_name","user_location","user_followers_count","user_friends_count","user_created_at","user_time_zone","user_profile_background_color","user_profile_image_url","geo","coordinates","place"\n';
+
+                        for (t in databaseTweets){
+                            output += '\n"' + databaseTweets[t]["created_at"] + '",';
+                            output += '"' + databaseTweets[t]["id"] + '",';
+                            output += '"' + databaseTweets[t]["text"] + '",';
+                            output += '"' + databaseTweets[t]["user"]["id"] + '",';
+                            output += '"' + databaseTweets[t]["user"]["name"] + '",';
+                            output += '"' + databaseTweets[t]["user"]["screen_name"] + '",';
+                            output += '"' + databaseTweets[t]["user"]["location"] + '",';
+                            output += '"' + databaseTweets[t]["user"]["followers_count"] + '",';
+                            output += '"' + databaseTweets[t]["user"]["friends_count"] + '",';
+                            output += '"' + databaseTweets[t]["user"]["created_at"] + '",';
+                            output += '"' + databaseTweets[t]["user"]["time_zone"] + '",';
+                            output += '"' + databaseTweets[t]["user"]["profile_background_color"] + '",';
+                            output += '"' + databaseTweets[t]["user"]["profile_image_url"] + '",';
+                            output += '"' + databaseTweets[t]["geo"] + '",';
+                            output += '"' + databaseTweets[t]["coordinates"] + '",';
+                            output += '"' + databaseTweets[t]["place"] + '"\n';
+                        }
+                        databaseTweets[t] = [];
+                        var name = $scope.fileName;
+                        socket.emit("export", {filetype:type, text:output, filename:name});
+                    }  
+
+                    console.log("Finished formatting tweets");
+
                 }
+
                 else{
-                    console.log("XMLtweets empty");
+                    console.log("No tweets loaded from Database");
                 }
             }
 
@@ -431,69 +500,12 @@
                 } 
             }
 
-            // Formats data and sends back to server
+
             $scope.sendExport = function(){
                 var type = $scope.selectionType;
-                var output = "";
-                if (type == "JSON"){
-                    output += "[\n";
-                    for (t in tweetBuffer){
-                        output += '{';
-                        output += '\n\t"created_at": "' + tweetBuffer[t]["created_at"] + '"';
-                        output += ',\n\t"id": "' + tweetBuffer[t]["id"] + '"';
-                        output += ',\n\t"text": "' + tweetBuffer[t]["text"] + '"';
-                        output += ',\n\t"user_id": "' + tweetBuffer[t]["user"]["id"] + '"';
-                        output += ',\n\t"user_name": "' + tweetBuffer[t]["user"]["name"] + '"';
-                        output += ',\n\t"user_screen_name": "' + tweetBuffer[t]["user"]["screen_name"] + '"';
-                        output += ',\n\t"user_location": "' + tweetBuffer[t]["user"]["location"] + '"';
-                        output += ',\n\t"user_followers_count": "' + tweetBuffer[t]["user"]["followers_count"] + '"';
-                        output += ',\n\t"user_friends_count": "' + tweetBuffer[t]["user"]["friends_count"] + '"';
-                        output += ',\n\t"user_created_at": "' + tweetBuffer[t]["user"]["created_at"] + '"';
-                        output += ',\n\t"user_time_zone": "' + tweetBuffer[t]["user"]["time_zone"] + '"';
-                        output += ',\n\t"user_profile_background_color": "' + tweetBuffer[t]["user"]["profile_background_color"] + '"';
-                        output += ',\n\t"user_profile_image_url": "' + tweetBuffer[t]["user"]["profile_image_url"] + '"';
-                        output += ',\n\t"geo": "' + tweetBuffer[t]["geo"] + '"';
-                        output += ',\n\t"coordinates": "' + tweetBuffer[t]["coordinates"] + '"';
-                        output += ',\n\t"place": "' + tweetBuffer[t]["place"] + '"';
-                        output += ',\n},\n';
-                    }
-                    output += "]";
-                    socket.emit("export", {filetype:type, text:output});
-                }
-
-                if (type == "CSV"){
-                    output += '"created_at","id","text","user_id","user_name","user_screen_name","user_location","user_followers_count","user_friends_count","user_created_at","user_time_zone","user_profile_background_color","user_profile_image_url","geo","coordinates","place"\n';
-
-                    for (t in tweetBuffer){
-                        output += '\n"' + tweetBuffer[t]["created_at"] + '",';
-                        output += '"' + tweetBuffer[t]["id"] + '",';
-                        output += '"' + tweetBuffer[t]["text"] + '",';
-                        output += '"' + tweetBuffer[t]["user"]["id"] + '",';
-                        output += '"' + tweetBuffer[t]["user"]["name"] + '",';
-                        output += '"' + tweetBuffer[t]["user"]["screen_name"] + '",';
-                        output += '"' + tweetBuffer[t]["user"]["location"] + '",';
-                        output += '"' + tweetBuffer[t]["user"]["followers_count"] + '",';
-                        output += '"' + tweetBuffer[t]["user"]["friends_count"] + '",';
-                        output += '"' + tweetBuffer[t]["user"]["created_at"] + '",';
-                        output += '"' + tweetBuffer[t]["user"]["time_zone"] + '",';
-                        output += '"' + tweetBuffer[t]["user"]["profile_background_color"] + '",';
-                        output += '"' + tweetBuffer[t]["user"]["profile_image_url"] + '",';
-                        output += '"' + tweetBuffer[t]["geo"] + '",';
-                        output += '"' + tweetBuffer[t]["coordinates"] + '",';
-                        output += '"' + tweetBuffer[t]["place"] + '"\n';
-                    }
-                    socket.emit("export", {filetype:type, text:output});
-                }  
-            }
-
-            $scope.createXML = function(){
+                console.log(type);
                 $scope.output = "Fetching tweets from database..."
-                $scope.$apply();
                 socket.emit("getDatabase", {user:"XML"});
-            }
-
-            $scope.buildDatabase = function(){
-                socket.emit("buildDatabase", {tweetList: tweetBuffer});
             }
 
             $scope.clearDatabase = function(){
