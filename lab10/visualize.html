@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+
+    <!-- Angular -->
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.3.5/angular.min.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.3.5/angular-route.js"> </script>
+
+    <!-- Sockets -->
+    <script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
+
+
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    
+
+    <link href="tweets.css" rel="stylesheet">
+
+    <!-- Bootstrap Core CSS -->
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+
+
+
+
+    
+
+    <!-- Custom CSS -->
+    <style>
+    body {
+        padding-top: 20px;
+        /* Required padding for .navbar-fixed-top. Remove if using .navbar-static-top. Change if height of navigation changes. */
+    }
+    </style>
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    
+    
+    <h1 align="center">Tweet Clicker</h1>
+    
+
+</head>
+
+<body ng-app="TweetClicker", ng-controller="TweetCtrl">
+    <meta charset="utf-8">
+
+    <!-- Navigation -->
+    
+
+    <!-- Page Content -->
+    <div class="container">
+
+      
+    <div class="row">
+        <div class="col-lg-2">
+            <h4>Query</h4> 
+            <input type="text", ng-model="search">
+
+            <h4>Number of Tweets</h4> 
+            <input type="number", ng-model="number">
+
+            <button ng-click="searchButton()">Load</button>
+            <h4><br></h4>
+
+            <button ng-click="clearDatabase()">Clear Database</button>
+            <h4><br></h4>
+
+            <button ng-click="displayTweets()">Display Tweets</button>
+            <h4><br></h4>
+
+            <button ng-click="tags()">Visualize Tags</button>
+            
+            <h4><br></h4>
+
+            
+
+            
+
+
+        </div>
+
+        <div class="col-lg-10">
+            <div class="row">
+                <div class="col-lg-1"></div>
+                <div class="col-lg-8"><h4>{{output}}</h4></div>
+        
+            </div>
+            
+                <!-- 5 rows of ticking tweets -->
+            <div class="row", id="row1", ng-show="output1 != null">
+               
+                <!-- Profile image -->
+                <div class="col-lg-1"></div>
+                <div class="col-lg-1">
+                    <img class="avatar", ng-src="{{image1}}">
+                </div>
+                <!-- Tweet text content in a panel-->
+                <div class="col-lg-7">
+                    <div class="panel panel-default">
+                        <div class="panel-body", id="output1">{{output1}}</div>
+                    </div>
+                </div>
+                <!-- Free floating hashtags -->
+                <div class="col-lg-2">
+                    {{hashtag1}}
+                </div>
+                
+            </div>
+            <!-- /.row -->
+
+            <br>
+
+            <div>
+                <h4>Number of tweets per hashtag</h4>
+                <canvas id="hashtagcanvas" ng-model="hashtagChart"></canvas>
+            </div>
+
+            <br>
+
+            <div>
+                <h4>Number of followers per user</h4>
+                <canvas id="followercanvas" ng-model="followerChart"></canvas>
+            </div>
+
+            <br>
+
+            <div>
+                <h4>Number of tweets per language</h4>
+                <canvas id="languagecanvas" ng-model="languageChart"></canvas>
+            </div>
+            
+           
+
+                
+        
+
+
+            
+
+        <!-- /.row -->
+        </div>
+
+        
+        
+    </div>
+  
+
+
+    
+
+    
+
+
+        
+        
+
+    </div>
+    <!-- /.container -->
+
+    <!-- jQuery Version 1.11.1 -->
+    <script src="js/jquery.js"></script>
+
+    <!-- Bootstrap Core JavaScript -->
+    <script src="js/bootstrap.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.1.0/Chart.min.js"></script>
+
+
+    
+
+    
+    <script>
+        var app = angular.module("TweetClicker", ["ngRoute"]);
+
+        // Connection to server
+        var socket = io.connect("http://localhost:3000/");
+
+        // container for tweets
+        var tweetBuffer = [];
+        var tweets = [];
+        var databaseTweets = [];
+        var tweetsDisplaying = false;
+        var stopDisplayingTweets = false;
+
+        Chart.defaults.global.defaultFontColor = "#FFFFFF";
+        Chart.defaults.global.defaultColor = "#00FF99";
+        Chart.defaults.global.elements.rectangle.backgroundColor = "#00FF99";
+
+       
+
+       
+
+
+
+        app.controller("TweetCtrl", function($scope, $http) {
+            $scope.output = "Fetching tweets from database..."
+            socket.emit("getDatabase", {user:"XML"});
+
+            
+
+            // Receives Tweets from server
+            socket.on("tweet", function(data){
+                if (tweetBuffer.length < $scope.number){
+                    tweetBuffer.push(data);
+                    databaseTweets.push(data);
+                    updateCharts(data);
+                    $scope.output = "Obtained " + tweetBuffer.length + " tweets";
+                    $scope.$apply();
+
+                    if (tweetBuffer.length >= $scope.number){
+                        socket.emit("buildDatabase", {tweetList: tweetBuffer});
+                    }
+                }
+                else {
+                    socket.emit("stop");
+                }
+            });
+
+            // Prints message when server has exported tweets
+            socket.on("export", function(data){
+                console.log("export");
+                $scope.output = data.message;
+                $scope.$apply();
+                console.log($scope.output);
+            });
+
+            socket.on("tweeterror", function(data){
+                console.log("tweeterror");
+                $scope.output = data.message;
+                $scope.$apply();
+                console.log($scope.output);
+            });
+
+            // display message that tweets have been added to database
+            socket.on("databaseBuilt", function(data){
+                $scope.output = "Tweets added to database";
+                $scope.$apply();
+                console.log($scope.output);
+            });
+
+            // display message that tweets have been removed from database
+            socket.on("databaseCleared", function(data){
+                $scope.output = "Cleared all tweets from database";
+                $scope.$apply();
+                console.log($scope.output);
+            });
+
+            // database query is done
+            socket.on("databaseEmpty", function(data){
+                setTimeout(function(){
+                    $scope.output = "Finished Fetching Tweets";
+                    $scope.$apply();
+                    calculateStats();
+                }, 4000);
+                
+            });
+
+            socket.on("displayTweets", function(data){
+                console.log(data);
+                tweets.push(data);
+            });
+
+            socket.on("XMLTweets", function(data){
+                console.log("TweetRecieved", data);
+                databaseTweets.push(data);
+            });
+
+            // returns a string of hashtags
+            function buildHashtagString(hashtags){
+                var string = "";
+                for(i = 0; i < hashtags.length; i++)
+                {
+                    string = string + "#" + hashtags[i]["text"] + " ";
+                }
+                return string;
+            }
+
+            // changes text content
+            function changeText(tweet){
+
+                $scope.output5 = $scope.output4;
+                $scope.output4 = $scope.output3;
+                $scope.output3 = $scope.output2;
+                $scope.output2 = $scope.output1;
+                $scope.output1 = tweet["text"];
+            }
+            // changes profile pics
+            function changeImage(tweet){
+                
+                $scope.image5 = $scope.image4;
+                $scope.image4 = $scope.image3;
+                $scope.image3 = $scope.image2;
+                $scope.image2 = $scope.image1;
+                $scope.image1 = tweet["user"]["profile_image_url"];
+            }
+
+            // changes hashtags
+            function changeHashtags(tweet){
+               
+                $scope.hashtag5 = $scope.hashtag4;
+                $scope.hashtag4 = $scope.hashtag3;
+                $scope.hashtag3 = $scope.hashtag2;
+                $scope.hashtag2 = $scope.hashtag1;
+                $scope.hashtag1 = buildHashtagString(tweet["entities"].hashtags);
+            }
+
+            function resetAnimation(row){
+                row.classList.remove("row");
+                row.offsetWidth = row.offsetWidth; // I have no idea why this makes the animation reset but it does
+                row.classList.add("row");
+            }
+
+
+            function display(){
+
+                if (stopDisplayingTweets){
+                    stopDisplayingTweets = false;
+                    return;
+                }
+               
+                if (tweets.length > 0) {
+                    tweetsDisplaying = true;
+                    var tweet = tweets.shift();
+                    tweets.push(tweet);
+                    // change html content
+                    changeText(tweet);
+                    changeImage(tweet);
+                    changeHashtags(tweet);
+                    // assures content is displayed
+                    $scope.$apply();
+
+                    resetAnimation(document.getElementById("row1"));  
+
+                    
+
+                }
+                setTimeout(display, 3000);
+                    
+            };
+
+            function calculateStats(){
+                var tags = hashtagData();
+                var followers = followerData();
+                var languages = languageData();   
+            }
+
+            function randomColor(){
+                var chars = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F"];
+                var color = "#";
+                for (i = 0; i < 6; i++){
+                    color += chars[Math.floor((Math.random() * 16) )];
+                }
+                return color;
+            }
+
+            function hashtagData(){
+                var tags = {};
+                for (t in databaseTweets){
+                    var hashtags = databaseTweets[t].entities.hashtags;
+                    for (h in hashtags){
+                        if (tags[hashtags[h].text] === undefined){
+                            tags[[hashtags[h].text]] = 1;
+                        }
+                        else{
+                            tags[[hashtags[h].text]] = tags[[hashtags[h].text]] + 1;
+                        }
+                    }
+                }
+
+                var labelsList = [];
+                var valuesList = [];
+                var colors = [];
+
+                for (t in tags){
+                    labelsList.push(t);
+                    valuesList.push(tags[t]);
+                    colors.push(randomColor());
+                }
+
+                var context = document.getElementById("hashtagcanvas").getContext("2d");
+        
+                var chart = new Chart( context, {
+                    type: "bar", 
+                    data: {
+                        labels: labelsList, 
+                        datasets: [{
+                            label: "Number of Tweets", 
+                            data: valuesList,
+                            backgroundColor: colors.slice(0, valuesList.length),
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            yAxes: [{
+                                ticks: {
+                                    beginAtZero: true
+                                }
+                            }]
+                        }
+                    }
+                });
+                $scope.hashtagChart = chart;
+            }
+
+            function categorizeFollowers(num){
+                if (num == 0){
+                    return "0";
+                }
+                if (num <= 10){
+                    return "1 - 10";
+                }
+                if (num <= 100){
+                    return "11 - 100";
+                }
+                if (num <= 1000){
+                    return "101 - 1000";
+                }
+                if (num <= 10000){
+                    return "1001 - 10000";
+                }
+                return "above 10000"
+            }
+
+            function followerData(){
+                var followers = {"0": 0, "1 - 10": 0, "11 - 100": 0, "101 - 1000":0, "1001 - 10000":0, "above 10000":0};
+                for (t in databaseTweets){
+                    var user_followers = databaseTweets[t].user.followers_count;
+                    var rounded = categorizeFollowers(user_followers);
+                   
+                    if (followers[rounded] === undefined){
+                        followers[rounded] = 1;
+                    }
+                    else{
+                        followers[rounded] = followers[rounded] + 1;
+                    }
+                    
+                }
+                
+                var labelsList = [];
+                var valuesList = [];
+                var colors = [];
+
+                for (f in followers){
+                    labelsList.push(f);
+                    valuesList.push(followers[f]);
+                    colors.push(randomColor());
+                }
+
+                var context = document.getElementById("followercanvas").getContext("2d");
+        
+                var chart = new Chart( context, {
+                    type: "doughnut", 
+                    data: {
+                        labels: labelsList, 
+                        datasets: [{
+                            label: "Number of followers", 
+                            data: valuesList,
+                            backgroundColor: colors.slice(0, valuesList.length),
+                        }]
+                    },
+                });
+                $scope.followerChart = chart
+
+            }
+
+            function getLanguage(abr){
+                languages = {
+                    "ar" : "Arabic",
+                    "eu" : "Basque",
+                    "ca" : "Catalan",
+                    "cs" : "Czech",
+                    "da" : "Danish",
+                    "nl" : "Dutch",
+                    "en" : "English",
+                    "en-gb" : "English",
+                    "fa" : "Farsi",
+                    "fil" : "Filipino",
+                    "fi" : "Finnish",
+                    "fr" : "French",
+                    "gl" : "Galician",
+                    "de" : "German",
+                    "el" : "Greek",
+                    "he" : "Hebrew",
+                    "hi" : "Hindi",
+                    "hu" : "Hungarian", 
+                    "id" : "Indonesian",
+                    "it" : "Italian",
+                    "ja" : "Japanese",
+                    "ko" : "Korean",
+                    "lv" : "Latvian",
+                    "lolc" : "Lolcatz",
+                    "msa" : "Malay",
+                    "no" : "Norwegian",
+                    "nb" : "Norwegian Bokmål", 
+                    "pl" : "Polish",
+                    "pt" : "Portuguese",
+                    "ro" : "Romainian",
+                    "ru" : "Russian", 
+                    "zh-cn" : "Chinese", 
+                    "sl" : "Slovene",
+                    "es" : "Spanish",
+                    "es-MX" : "Spanish", 
+                    "sv" : "Swedish",
+                    "th" : "Thai",
+                    "zh-tw" : "Chinese",
+                    "tr" : "Turkish",
+                    "uk" : "Ukranian", 
+                    "ur" : "Urdu"
+                }
+                return languages[abr];
+            }
+
+            function languageData(){
+                var languages = {};
+                for (t in databaseTweets){
+                    var lang = getLanguage(databaseTweets[t].lang);
+                   
+                    if (languages[lang] === undefined){
+                        languages[lang] = 1;
+                    }
+                    else{
+                        languages[lang] = languages[lang] + 1;
+                    }
+                }
+                var labelsList = [];
+                var valuesList = [];
+                var colors = [];
+
+                for (l in languages){
+                    labelsList.push(l);
+                    valuesList.push(languages[l]);
+                    colors.push(randomColor());
+                }
+
+                var context = document.getElementById("languagecanvas").getContext("2d");
+        
+                var chart = new Chart( context, {
+                    type: "bar", 
+                    data: {
+                        labels: labelsList, 
+                        datasets: [{
+                            label: "Number of Tweets", 
+                            data: valuesList,
+                            backgroundColor: colors.slice(0, valuesList.length),
+                        }]
+                    },
+                    options: {
+                        scales: {
+                            yAxes: [{
+                                ticks: {
+                                    beginAtZero: true
+                                }
+                            }]
+                        }
+                    }
+                });
+                $scope.languageChart = chart;
+
+            }
+
+            function updateCharts(tweet){
+                var tagsList = $scope.hashtagChart.config.data.labels;
+                var hashtags = tweet.entities.hashtags;
+
+                for (h in hashtags){
+                    var index = -1;
+                    for (t in tagsList){
+                        if (tagsList[t] === hashtags[h].text){
+                            index = t;
+                        }
+                    }
+                    if (index === -1){
+                        $scope.hashtagChart.config.data.labels.push(hashtags[h].text);
+                        $scope.hashtagChart.config.data.datasets[0].data.push(1);
+                        $scope.hashtagChart.config.data.datasets[0].backgroundColor.push(randomColor());
+                    }
+                    else{
+                        $scope.hashtagChart.config.data.datasets[0].data[index] += 1;
+                    }
+                }
+                
+                $scope.hashtagChart.update();
+
+                var rounded = categorizeFollowers(tweet.user.followers_count);
+                var followersList = $scope.followerChart.config.data.labels;
+
+                var index = -1;
+                for (f in followersList){
+                    if (rounded === followersList[f]){
+                        index = f;
+                    }
+                }
+                if (index === -1){
+                    $scope.followerChart.config.data.labels.push(rounded);
+                    $scope.followerChart.config.data.datasets[0].data.push(1);
+                    $scope.followerChart.config.data.datasets[0].backgroundColor.push(randomColor());
+
+                }
+                else{
+                    $scope.followerChart.config.data.datasets[0].data[index] += 1;
+                }
+                
+                $scope.followerChart.update();
+
+                console.log(tweet);
+                var languageList = $scope.languageChart.config.data.labels;
+                var language = getLanguage(tweet.lang);
+
+                var index = -1;
+                for (l in languageList){
+                    if (language === languageList[l]){
+                        index = l;
+                    }
+                }
+                if (index === -1){
+                    $scope.languageChart.config.data.labels.push(language);
+                    $scope.languageChart.config.data.datasets[0].data.push(1);
+                    $scope.languageChart.config.data.datasets[0].backgroundColor.push(randomColor());
+
+                }
+                else{
+                    $scope.languageChart.config.data.datasets[0].data[index] += 1;
+                }
+                
+                $scope.languageChart.update();
+
+                
+            }
+
+
+            
+
+            // Clears buffer and sends request to server
+            $scope.searchButton = function(){
+                if ($scope.number == null){
+                    $scope.output = "Please enter a number in the 'Number of Tweets' field";
+                }
+                else{
+                    $scope.output = "Waiting for tweets...";
+                    tweetBuffer = [];
+                    searchTerm = $scope.search;
+                    socket.emit("message", {txt:"message text", search:searchTerm});
+                } 
+            }
+
+           
+            $scope.clearDatabase = function(){
+                socket.emit("clearDatabase", {tweetList: tweetBuffer});
+            }
+
+            $scope.displayTweets = function(){
+                if (tweetsDisplaying){
+                    stopDisplayingTweets = true;
+                    tweets = [];
+                }
+                $scope.output = "Fetching tweets from database..."
+                $scope.$apply();
+                socket.emit("getDatabase", {user:"display"});
+               
+                display();
+            }
+
+            $scope.tags = function(){
+                $scope.output = "Fetching tweets from database..."
+                socket.emit("getDatabase", {user:"XML"});
+            }
+
+        });
+
+    </script>
+
+</body>
+
+</html>
+
